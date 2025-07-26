@@ -5,31 +5,64 @@ interface Props {
   entries: Entry[];
   type: 'Income' | 'Expense';
   total: number;
+  onDelete: (id: string) => void;
 }
 
-const fmt = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2 });
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amount);
+};
 
-export default function EntryTable({ entries, type, total }: Props) {
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString();
+};
+
+export default function EntryTable({ entries, type, total, onDelete }: Props) {
   return (
-    <>
+    <div className="entry-table">
       <h2>{type} List</h2>
-      <table>
-        <thead>
-          <tr><th>Source</th><th>Amount</th><th>Date</th></tr>
-        </thead>
-        <tbody>
-          {entries.map((entry, idx) => (
-            <tr key={idx}>
-              <td>{entry.source}</td>
-              <td>{fmt(entry.amount)}</td>
-              <td>{entry.date}</td>
+      {entries.length === 0 ? (
+        <p>No {type.toLowerCase()} entries yet</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr><td>Total</td><td>{fmt(total)}</td><td></td></tr>
-        </tfoot>
-      </table>
-    </>
+          </thead>
+          <tbody>
+            {entries.map((entry) => (
+              <tr key={entry.id}>
+                <td>{entry.source}</td>
+                <td>{formatCurrency(entry.amount)}</td>
+                <td>{formatDate(entry.date)}</td>
+                <td>
+                  <button 
+                    className="delete-btn"
+                    onClick={() => onDelete(entry.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total:</td>
+              <td>{formatCurrency(total)}</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      )}
+    </div>
   );
 }
